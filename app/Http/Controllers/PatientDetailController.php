@@ -31,7 +31,6 @@ class PatientDetailController extends Controller
                 'user_id' => $user->id,
                 'peso' => $data['peso'],
                 'recorded_at' => now(), // Data de hoje
-                'images' => '[]', // JSON vazio ou null se preferir
                 'notes' => 'Peso inicial registrado no cadastro.'
             ]);
         }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Contract;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,7 +17,8 @@ class UserController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:6|string|confirmed',
             'password_confirmation' => 'required|same:password',
-            'profile_image' => 'nullable|image|mimes:png,jpg,jpeg'
+            'profile_image' => 'nullable|image|mimes:png,jpg,jpeg',
+            'role' => 'required|in:admin,nutricionista,personal,cliente'
         ], [
             'required' => 'O campo :attribute é obrigatorio',
             'email.unique' => 'Email já cadastrado',
@@ -29,14 +31,18 @@ class UserController extends Controller
         if ($request->hasFile('profile_image')) {
             $path = $request->file('profile_image')->store('profiles', 'public');
 
-            $data['profile_path'] = $path;
+            $validator['profile_path'] = $path;
         }
 
-        unset($data['profile_image']);
+        unset($validator['profile_image']);
         unset($validator['password_confirmation']);
 
 
-        User::create($validator);
+        $user = User::create($validator);
+
+        $user->role()->create([
+            'name' => $request->role
+        ]);
 
         return response()->json([
             'Usuario criado com sucesso'
@@ -93,15 +99,20 @@ class UserController extends Controller
         return response()->json($profissionais);
     }
 
-    public function indexPatients()
+    public function indexPatients(Request $request)
     {
-        $pacientes = User::whereHas('role', function ($query) {
-            $query->where('name', 'paciente');
-        })
-            ->with(['role', 'patient_details'])
+        $professionalId = $request->user()->id;
+
+        // Buscamos os contratos ativos do profissional logado
+        $contracts = Contract::where('professional_id', $professionalId)
+            ->where('status', 'active')
+            ->with(['student.patient_details', 'student.measurements']) // Traz os dados do aluno
             ->get();
 
-        return response()->json($pacientes);
+        // Transformamos para retornar uma lista limpa de alunos (opcional)
+        $students = $contracts->pluck('student');
+
+        return response()->json($students);
     }
 
     public function showProfessional($id)
@@ -122,7 +133,7 @@ class UserController extends Controller
         $paciente = User::with(['role', 'patient_details', 'measurements'])
             ->where('id', $id)
             ->whereHas('role', function ($q) {
-                $q->where('name', 'paciente');
+                $q->where('name', 'cliente');
             })
             ->firstOrFail();
 

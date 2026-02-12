@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('measurements', function (Blueprint $table) {
             $table->id();
             $table->decimal('peso', 5, 2);
-            $table->string('images');
             $table->date('recorded_at');
             $table->decimal('waist_cm', 5, 2)->nullable();
             $table->decimal('hips_cm', 5, 2)->nullable();

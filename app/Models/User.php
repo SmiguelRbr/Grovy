@@ -53,12 +53,42 @@ class User extends Authenticatable
         return $this->hasOne(Role::class);
     }
 
-    public function professional_profiles()
+    public function professional_profile()
     {
         return $this->hasOne(ProfessionalProfile::class);
     }
 
     public function patient_details(){
         return $this->hasOne(PatientDetail::class);
+    }
+
+    public function measurements()
+    {
+        return $this->hasMany(Measurement::class);
+    }
+
+    public function contents()
+    {
+        return $this->hasMany(Content::class, 'user_id');
+    }
+
+    public function contracts_as_student()
+    {
+        return $this->hasMany(Contract::class, 'student_id');
+    }
+
+    public function contracts_as_professional()
+    {
+        return $this->hasMany(Contract::class, 'professional_id');
+    }
+
+    public function plans_as_student()
+    {
+        return $this->hasMany(Plan::class, 'student_id');
+    }
+
+    public function plans_as_professional()
+    {
+        return $this->hasMany(Plan::class, 'professional_id');
     }
 }

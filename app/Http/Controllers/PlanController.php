@@ -4,6 +4,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Contract;
 use App\Models\Plan;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -13,7 +14,7 @@ class PlanController extends Controller
 
     public function store(Request $request)
     {
-        // 1. Validação
+        // 1. Validação básica dos dados recebidos
         $data = $request->validate([
             'student_id' => 'required|exists:users,id',
             'title' => 'required|string|max:100',
@@ -23,14 +24,24 @@ class PlanController extends Controller
             'expires_at' => 'nullable|date'
         ]);
 
+        $professionalId = $request->user()->id;
+        $studentId = $data['student_id'];
 
-        $student = User::find($data['student_id']);
-        if (!$student || $student->role->name !== 'paciente') {
-            return response()->json(['error' => 'O usuário selecionado não é um aluno.'], 422);
+        // 2. Verificação pelo CONTRACT (O ponto chave)
+        $hasActiveContract = Contract::where('professional_id', $professionalId)
+            ->where('student_id', $studentId)
+            ->where('status', 'active')
+            ->exists();
+
+        if (!$hasActiveContract) {
+            return response()->json([
+                'error' => 'Vínculo inválido.',
+                'message' => 'Você só pode enviar planos para alunos com contrato ativo.'
+            ], 403);
         }
 
-
-        $data['professional_id'] = $request->user()->id;
+        // 3. Preparação e Criação
+        $data['professional_id'] = $professionalId;
 
         $plan = Plan::create($data);
 

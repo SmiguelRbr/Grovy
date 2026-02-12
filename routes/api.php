@@ -28,8 +28,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [UserController::class, 'logout']);
 
     // Cadastro de Detalhes do Perfil (Onboarding)
-    Route::post('/perfil/paciente', [PatientDetailController::class, 'store']);
-    Route::post('/perfil/profissional', [ProfessionalProfileController::class, 'store']);
+    Route::middleware(CheckRole::class . ':cliente')->group(function () {
+        Route::post('/perfil/paciente', [PatientDetailController::class, 'store']);
+    });
+
+    // Apenas nutricionistas ou personals podem configurar o perfil profissional
+    Route::middleware(CheckRole::class . ':nutricionista,personal')->group(function () {
+        Route::post('/perfil/profissional', [ProfessionalProfileController::class, 'store']);
+    });
 
     // Marketplace e Visualização de Profissionais
     // Disponível para todos os usuários logados
@@ -40,7 +46,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // --- ÁREA DO PACIENTE ---
     // Apenas usuários com role 'paciente' acessam
-    Route::middleware([CheckRole::class . ':paciente'])->group(function () {
+    Route::middleware([CheckRole::class . ':cliente'])->group(function () {
 
         // Dashboard e Recomendações
         Route::prefix('dashboard')->group(function () {
