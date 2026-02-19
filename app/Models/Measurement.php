@@ -28,4 +28,11 @@ class Measurement extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    protected function casts(): array
+    {
+        return [
+            'recorded_at' => 'datetime',
+        ];
+    }
 }

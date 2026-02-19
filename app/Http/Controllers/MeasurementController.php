@@ -22,7 +22,6 @@ class MeasurementController extends Controller
       
         $data = $request->validate([
             'peso' => 'required|numeric',
-            'recorded_at' => 'required|date',
            
             'waist_cm' => 'nullable|numeric',
             'hips_cm' => 'nullable|numeric',
@@ -34,6 +33,8 @@ class MeasurementController extends Controller
             'photo_back' => 'nullable|image|max:5120',
         ]);
 
+        $data['user_id'] = $request->user()->id;
+        $data['recorded_at'] = now();
         
         $photos = ['photo_front' => 'photo_front_path', 'photo_side' => 'photo_side_path', 'photo_back' => 'photo_back_path'];
 
@@ -48,14 +49,11 @@ class MeasurementController extends Controller
         }
 
        
-        $data['user_id'] = $request->user()->id;
+        
 
         
         $measurement = Measurement::create($data);
 
-        // --- PULO DO GATO ---
-        // Atualiza também o "peso atual" na tabela patient_details
-        // Assim o perfil do usuário fica sempre atualizado com a última pesagem
         $request->user()->patient_details()->update([
             'peso' => $data['peso']
         ]);
