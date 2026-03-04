@@ -16,16 +16,17 @@ class UserController extends Controller
             'name' => 'required|string',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:6|string|confirmed',
-            'password_confirmation' => 'required|same:password',
+            'password_confirmation' => 'required',
             'profile_image' => 'nullable|image|mimes:png,jpg,jpeg',
             'role' => 'required|in:admin,nutricionista,personal,cliente'
         ], [
             'required' => 'O campo :attribute é obrigatorio',
             'email.unique' => 'Email já cadastrado',
             'email.email' => 'Coloque um formato de email válido',
-            'confirmed' => 'Senhas não coicidem',
             'image' => 'Por favor coloque uma imagem',
             'mimes' => 'Este formato de imagem não é permitido',
+            'confirmed' => 'As senhas não coincidem',
+            
         ]);
 
         if ($request->hasFile('profile_image')) {
@@ -40,12 +41,15 @@ class UserController extends Controller
 
         $user = User::create($validator);
 
+        $token = $user->createToken('Auth_Token')->plainTextToken;
+
         $user->role()->create([
             'name' => $request->role
         ]);
 
         return response()->json([
-            'Usuario criado com sucesso'
+            'message' => 'Usuario criado com sucesso',
+            'token' => $token
         ], 200);
     }
 
