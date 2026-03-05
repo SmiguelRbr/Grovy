@@ -26,6 +26,7 @@ class UserController extends Controller
             'image' => 'Por favor coloque uma imagem',
             'mimes' => 'Este formato de imagem não é permitido',
             'confirmed' => 'As senhas não coincidem',
+            'password.min' => 'A senha deve ter no minimo 6 caracteres'
             
         ]);
 
