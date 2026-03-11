@@ -70,11 +70,14 @@ class UserController extends Controller
             ], 403);
         }
 
+        $user = $request->user()->load('role');
+
         $token = $request->user()->createToken('Auth_Token')->plainTextToken;
 
         return response()->json([
             'token' => $token,
             'message' => 'Usuario logado com sucesso',
+            'user' => $user
         ], 200);
     }
 

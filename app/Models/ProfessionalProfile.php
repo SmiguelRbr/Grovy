@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class ProfessionalProfile extends Model
 {
     protected $fillable = [
-        'CRN/CREF',
+        'registro_profissional',
         'bio',
         'aprovado',
     ];

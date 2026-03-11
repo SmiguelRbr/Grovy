@@ -13,21 +13,22 @@ class CheckRole
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next, string $role): Response
+    public function handle(Request $request, Closure $next, ...$roles): Response
     {
         $user = $request->user();
 
-        if(!$user || $user->role->name === null){
+        if (!$user || !$user->role) {
             return response()->json([
-                'error' => 'Você ainda não terminou de se cadastrar',
+                'error' => 'Você ainda não terminou de se cadastrar'
             ], 403);
         }
 
-        if (!$user || $user->role->name !== $role) {
+        if (!in_array($user->role->name, $roles)) {
             return response()->json([
                 'error' => 'Você não tem permissão para acessar esta rota'
             ], 401);
         }
+
         return $next($request);
     }
 }

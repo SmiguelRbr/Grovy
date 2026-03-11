@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('professional_profiles', function (Blueprint $table) {
             $table->id();
-            $table->string('CRN/CREF');
+            $table->string('registro_profissional')->unique(); 
             $table->text('bio');
-            $table->boolean('aprovado')->default(false);
+            $table->boolean('aprovado')->default(true);
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });

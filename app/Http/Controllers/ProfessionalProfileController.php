@@ -9,7 +9,7 @@ class ProfessionalProfileController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'CRN/CREF' => 'required|string', // Ajuste o nome conforme seu banco
+            'registro_profissional' => 'required|string', // Ajuste o nome conforme seu banco
             'bio' => 'required|string|max:500',
         ]);
 
