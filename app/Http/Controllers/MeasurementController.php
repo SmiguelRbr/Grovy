@@ -10,7 +10,8 @@ class MeasurementController extends Controller
     public function index(Request $request)
     {
         $measurements = $request->user()->measurements()
-            ->orderBy('recorded_at', 'desc')
+            ->latest()
+            ->limit(7)
             ->get();
 
         return response()->json($measurements);
@@ -21,16 +22,18 @@ class MeasurementController extends Controller
     {
       
         $data = $request->validate([
-            'peso' => 'required|numeric',
+            'peso' => 'required|numeric|max:500',
            
-            'waist_cm' => 'nullable|numeric',
-            'hips_cm' => 'nullable|numeric',
-            'chest_cm' => 'nullable|numeric',
-            'notes' => 'nullable|string',
+            'waist_cm' => 'nullable|numeric|max:500',
+            'hips_cm' => 'nullable|numeric|max:500',
+            'chest_cm' => 'nullable|numeric|max:500',
+            'notes' => 'nullable|string|max:500',
           
-            'photo_front' => 'nullable|image|max:5120', 
-            'photo_side' => 'nullable|image|max:5120',
-            'photo_back' => 'nullable|image|max:5120',
+            'photo_front' => 'nullable|image', 
+            'photo_side' => 'nullable|image',
+            'photo_back' => 'nullable|image',
+        ], [
+            'max' => 'O numero maximo de numero ou caracteres foi ultrapassado no campo :attribute'
         ]);
 
         $data['user_id'] = $request->user()->id;
