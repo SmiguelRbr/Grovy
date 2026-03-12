@@ -63,6 +63,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Visualizar Plano Ativo (Dieta/Treino recebido)
         Route::get('/my-plan', [PlanController::class, 'showMyActivePlan']);
+        Route::get('/my-plans-history', [PlanController::class, 'indexMyPlans']);
     });
 
 

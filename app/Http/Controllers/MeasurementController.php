@@ -29,11 +29,12 @@ class MeasurementController extends Controller
             'chest_cm' => 'nullable|numeric|max:500',
             'notes' => 'nullable|string|max:500',
           
-            'photo_front' => 'nullable|image', 
-            'photo_side' => 'nullable|image',
-            'photo_back' => 'nullable|image',
+            'photo_front' => 'nullable|mimes:jpg,jpeg,png', 
+            'photo_side' => 'nullable|mimes:jpg,jpeg,png',
+            'photo_back' => 'nullable|mimes:jpg,jpeg,png',
         ], [
-            'max' => 'O numero maximo de numero ou caracteres foi ultrapassado no campo :attribute'
+            'max' => 'O numero maximo de numero ou caracteres foi ultrapassado no campo :attribute',
+            'image' => ':attribute Não e uma imagem'
         ]);
 
         $data['user_id'] = $request->user()->id;

@@ -18,7 +18,7 @@ class PlanController extends Controller
         $data = $request->validate([
             'student_id' => 'required|exists:users,id',
             'title' => 'required|string|max:100',
-            'type' => 'required|in:diet,workout',
+            'type' => 'required|in:dieta,treino,rotina',
             'description' => 'nullable|string',
             'content' => 'required|array',
             'expires_at' => 'nullable|date'

@@ -18,7 +18,7 @@ return new class extends Migration
         $table->foreignId('student_id')->constrained('users'); 
         
         $table->string('title'); 
-        $table->enum('type', ['diet', 'workout']); 
+        $table->string('type'); 
         
         $table->json('content'); 
         
