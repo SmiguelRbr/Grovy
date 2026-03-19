@@ -19,6 +19,9 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [UserController::class, 'register']);
 });
 
+Route::get('/profissionais/{id}/contents', [ContentController::class, 'getByProfessional']);
+Route::get('/profissionais', [UserController::class, 'indexProfessionals']);
+
 
 // --- ROTAS PROTEGIDAS (AUTH) ---
 // Acesso apenas com Token válido
@@ -39,9 +42,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Marketplace e Visualização de Profissionais
     // Disponível para todos os usuários logados
-    Route::get('/profissionais', [UserController::class, 'indexProfessionals']);
+
     Route::get('/profissionais/{id}', [UserController::class, 'showProfessional']);
-    Route::get('/profissionais/{id}/contents', [ContentController::class, 'getByProfessional']); // Conteúdos/Dicas do perfil
+    // Conteúdos/Dicas do perfil
 
 
     // --- ÁREA DO PACIENTE ---
