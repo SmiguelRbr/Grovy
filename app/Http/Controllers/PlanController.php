@@ -89,4 +89,26 @@ class PlanController extends Controller
 
         return response()->json($plans);
     }
+
+    /**
+     * Rejeitar um plano (Visão do Aluno)
+     */
+    public function reject(Request $request, $planId)
+    {
+        $plan = Plan::where('id', $planId)
+            ->where('student_id', $request->user()->id)
+            ->first();
+
+        if (!$plan) {
+            return response()->json(['error' => 'Plano não encontrado ou você não tem permissão para rejeitá-lo.'], 404);
+        }
+
+        if (!$plan->active) {
+            return response()->json(['error' => 'Este plano já foi rejeitado ou não está ativo.'], 400);
+        }
+
+        $plan->update(['active' => false]);
+
+        return response()->json(['message' => 'Plano rejeitado com sucesso!']);
+    }
 }
