@@ -88,6 +88,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/pacientes/{id}/plans', [PlanController::class, 'indexByStudent']); // Histórico de planos deste aluno
 
         // Criação de Planos e Conteúdos
+        Route::post('/plans/ai-generate', [PlanController::class, 'generatePlanWithAI']);
         Route::post('/plans', [PlanController::class, 'store']); // Enviar dieta/treino
         Route::post('/contents', [ContentController::class, 'store']); // Publicar dica no perfil
     });

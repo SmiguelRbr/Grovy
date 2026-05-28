@@ -8,6 +8,8 @@ use App\Models\Contract;
 use App\Models\Plan;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Laravel\Ai\Ai as LaravelAi; // Importamos a classe principal do Laravel AI SDK
 
 class PlanController extends Controller
 {
@@ -110,5 +112,81 @@ class PlanController extends Controller
         $plan->update(['active' => false]);
 
         return response()->json(['message' => 'Plano rejeitado com sucesso!']);
+    }
+
+    /**
+     * Copiloto de Prescrição via IA (Gemini) usando Agents
+     */
+    public function generatePlanWithAI(Request $request)
+    {
+        $request->validate([
+            'prompt' => 'required|string|max:1000',
+            'type' => 'required|in:dieta,treino,rotina'
+        ]);
+
+        $promptProfissional = $request->input('prompt');
+        $tipo = $request->input('type');
+
+        $systemPrompt = "És um assistente especializado em criar planos de {$tipo}. "
+            . "REGRA ABSOLUTA: A tua resposta deve ser ÚNICA e EXCLUSIVAMENTE um array JSON válido. "
+            . "NÃO uses blocos de código markdown (```json). NÃO uses aspas duplas dentro dos valores de texto (usa aspas simples se precisares). "
+            . "NÃO deixes vírgulas sobrando no final do array.\n"
+            . "Estrutura OBRIGATÓRIA (sempre estas chaves exatas):\n"
+            . "[{\"refeicao\": \"Treino A (Peito/Tríceps)\", \"alimentos\": \"Supino Reto 4x10, Crucifixo 3x12\"}]\n"
+            . "Se a instrução do utilizador não fizer sentido, gera um plano genérico de '{$tipo}'.";
+
+        try {
+            // --- A MARRETA DA FORÇA BRUTA ---
+            // 1. Injetamos o Gemini como padrão na memória do Laravel na hora H!
+            \Illuminate\Support\Facades\Config::set('ai.default', 'gemini');
+
+            $agent = new class($systemPrompt) implements \Laravel\Ai\Contracts\Agent {
+                use \Laravel\Ai\Promptable;
+
+                // 2. Obrigamos o próprio Agente a assumir que o provedor é o Gemini!
+                public string $provider = 'gemini';
+
+                public function __construct(private string $regras) {}
+
+                public function instructions(): string {
+                    return $this->regras;
+                }
+            };
+
+            // Disparamos a IA com o texto
+            $resposta = $agent->prompt($promptProfissional);
+            
+            $textoCru = (string) $resposta;
+
+            // Limpeza do markdown
+            $textoLimpo = str_replace(['```json', '```'], '', $textoCru);
+            $textoLimpo = trim($textoLimpo);
+
+            $inicio = strpos($textoLimpo, '[');
+            $fim = strrpos($textoLimpo, ']');
+            
+            if ($inicio === false || $fim === false) {
+                throw new \Exception('O modelo não gerou um array identificável.');
+            }
+
+            $jsonString = substr($textoLimpo, $inicio, $fim - $inicio + 1);
+            $conteudoGerado = json_decode($jsonString, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE || !is_array($conteudoGerado)) {
+                throw new \Exception('O JSON extraído é inválido: ' . json_last_error_msg());
+            }
+
+            return response()->json([
+                'success' => true,
+                'content' => $conteudoGerado
+            ]);
+
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Erro no Copiloto IA (Agent): ' . $e->getMessage() . ' | Texto da IA: ' . ($textoCru ?? 'Nenhum'));
+            
+            return response()->json([
+                'error' => 'A Inteligência Artificial encontrou uma falha de formatação. Tenta de novo com outras palavras.'
+            ], 500);
+        }
     }
 }
