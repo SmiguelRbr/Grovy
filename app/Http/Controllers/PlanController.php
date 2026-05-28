@@ -175,7 +175,9 @@ class PlanController extends Controller
             };
 
             // Disparamos a IA com o texto
-            $resposta = $agent->prompt($promptProfissional);
+            $resposta = retry(3, function () use ($agent, $promptProfissional) {
+                return $agent->prompt($promptProfissional);
+            }, 2000);
 
             $textoCru = (string) $resposta;
 
