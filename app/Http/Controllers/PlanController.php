@@ -26,6 +26,26 @@ class PlanController extends Controller
             'expires_at' => 'nullable|date'
         ]);
 
+        // === TRAVA DE SEGURANÇA INTEGRADA ===
+        $user = $request->user();
+        // Carrega o nome da role através da relação (ajusta se no teu model for diferente)
+        $roleName = $user->role->name;
+
+        if ($roleName === 'personal' && $data['type'] === 'dieta') {
+            return response()->json([
+                'error' => 'Acesso proibido.',
+                'message' => 'Um Personal Trainer não pode prescrever planos de dieta.'
+            ], 403);
+        }
+
+        if ($roleName === 'nutricionista' && $data['type'] === 'treino') {
+            return response()->json([
+                'error' => 'Acesso proibido.',
+                'message' => 'Um Nutricionista não pode prescrever planos de treino.'
+            ], 403);
+        }
+        // ===================================
+
         $professionalId = $request->user()->id;
         $studentId = $data['student_id'];
 
@@ -148,14 +168,15 @@ class PlanController extends Controller
 
                 public function __construct(private string $regras) {}
 
-                public function instructions(): string {
+                public function instructions(): string
+                {
                     return $this->regras;
                 }
             };
 
             // Disparamos a IA com o texto
             $resposta = $agent->prompt($promptProfissional);
-            
+
             $textoCru = (string) $resposta;
 
             // Limpeza do markdown
@@ -164,7 +185,7 @@ class PlanController extends Controller
 
             $inicio = strpos($textoLimpo, '[');
             $fim = strrpos($textoLimpo, ']');
-            
+
             if ($inicio === false || $fim === false) {
                 throw new \Exception('O modelo não gerou um array identificável.');
             }
@@ -180,10 +201,9 @@ class PlanController extends Controller
                 'success' => true,
                 'content' => $conteudoGerado
             ]);
-
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('Erro no Copiloto IA (Agent): ' . $e->getMessage() . ' | Texto da IA: ' . ($textoCru ?? 'Nenhum'));
-            
+
             return response()->json([
                 'error' => 'A Inteligência Artificial encontrou uma falha de formatação. Tenta de novo com outras palavras.'
             ], 500);
