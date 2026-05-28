@@ -8,6 +8,7 @@ use App\Http\Controllers\MeasurementController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ContentController;
+use App\Http\Controllers\DailyHabitController;
 use App\Http\Middleware\CheckRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -68,6 +69,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/my-plan', [PlanController::class, 'showMyActivePlan']);
         Route::get('/my-plans-history', [PlanController::class, 'indexMyPlans']);
         Route::patch('/plans/{id}/reject', [PlanController::class, 'reject']);
+
+        Route::get('/daily-habits/today', [DailyHabitController::class, 'getToday']);
+        Route::post('/daily-habits/quick-save', [DailyHabitController::class, 'quickSave']);
     });
 
 
@@ -91,5 +95,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/plans/ai-generate', [PlanController::class, 'generatePlanWithAI']);
         Route::post('/plans', [PlanController::class, 'store']); // Enviar dieta/treino
         Route::post('/contents', [ContentController::class, 'store']); // Publicar dica no perfil
+        
     });
 });
